@@ -13,22 +13,26 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import confusion_matrix, f1_score
-import joblib
+import tensorflow as tf
+from tensorflow.keras import Sequential
+from tensorflow.keras.layers import Dense, Flatten
+
+# Start with running cell of loading data if error occur start with the following cell
 
 
-# Download latest version
-path = "A_Z Handwritten Data.csv"  # Update the file path
+# Load the dataset
+file_path = "A_Z Handwritten Data.csv"  # Update the file path
+data = pandas.read_csv(file_path)
 
-print("Path to dataset files:", path)
-
-data = pandas.read_csv(path)
+# Work on a random subset of 1000 rows
+data = data.sample(n=5000, random_state=42)
 
 # Identify the number of unique classes
 n_classes = data.loc[:, '0'].unique().size
 print("Number of unique classes:", n_classes)
 
 # show their distribution
-# Todo ...
+# Todo
 
 X = data.drop(columns=['0'])
 y = data['0']
@@ -70,8 +74,12 @@ print(y_pred[2], y_test.iloc[2])
 plt.imshow(X_test_reshaped[2],cmap = 'gray')
 
 # To save the trained model
+# import joblib
+# joblib.dump(linear_svm, 'linear_svm_model.pkl')
 
-joblib.dump(linear_svm, 'linear_svm_model.pkl')
+# Download it to your machine
+# from google.colab import files
+# files.download('linear_svm_model.pkl')
 
 # SVM
 # non-linear kernels
@@ -96,3 +104,34 @@ joblib.dump(linear_svm, 'linear_svm_model.pkl')
 #   ▪ Test the best model with images representing the alphabetical letters
 #     for the names of each member of your team.
 #  o Compare the results of the models and suggest the best model.
+
+
+
+
+# Simple example of a neural network structure
+model = Sequential([
+    Flatten(input_shape=(28, 28)),
+    Dense(128, activation='relu'),  # Hidden layer with 128 neurons
+    Dense(26, activation='softmax') # Output layer (26 classes for A-Z)
+])
+
+# Preparing the model by specifying how it will learn and evaluate its performance
+model.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['accuracy'])
+
+
+# Reshape X_train, X_test
+X_train_reshaped = X_train.to_numpy().reshape(-1, 28, 28)
+
+
+# Train the model
+history = model.fit(X_train_reshaped, y_train, validation_split=0.2, epochs=10, batch_size=32)
+
+# Saving the model
+model.save("model.h5")
+
+
+# Reload and test the best model
+model = tf.keras.models.load_model("model.h5")
+test_loss, test_acc = model.evaluate(X_test_reshaped, y_test, verbose=2)
+print(f"Best Model Test Accuracy: {test_acc:.4f}")
+
