@@ -13,34 +13,141 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import confusion_matrix, f1_score
-import tensorflow as tf
-from tensorflow.keras import Sequential
-from tensorflow.keras.layers import Dense, Flatten
+# import tensorflow as tf
+# from tensorflow.keras import Sequential
+# from tensorflow.keras.layers import Dense, Flatten
+from sklearn.svm import LinearSVC
+from sklearn.metrics import confusion_matrix, f1_score
 
 # Start with running cell of loading data if error occur start with the following cell
 
 
-# Load the dataset
-file_path = "A_Z Handwritten Data.csv"  # Update the file path
-data = pandas.read_csv(file_path)
+train_error_history = []
+train_accuracy_history = []
+validation_error_history = []
+validation_accuracy_history = []
 
-# Work on a random subset of 1000 rows
-data = data.sample(n=5000, random_state=42)
 
-# Identify the number of unique classes
-n_classes = data.loc[:, '0'].unique().size
-print("Number of unique classes:", n_classes)
+def logisticRegression(x_train, y_train, x_test, y_test):
+    # x_test_flat = x_test.reshape(x_test.shape[0], -1)
+    iterations = 100
+    alpha = 0.001
 
-# show their distribution
-# Todo
+    y_train = y_train.to_numpy().reshape(-1, 1)
+    for i in range(y_train.shape[1]):
+        y_train_col = y_train[:, i]
+        # y_test_col = y_test[:, i]
+        weight, bias = trainModel(x_train, y_train_col, x_test, y_test, iterations, alpha)
+        # plottingError(cost_history, iterations)
+    prediction_values = predict(x_test, weight, bias)
+    Evaluate_logistic(prediction_values, y_test)
 
-X = data.drop(columns=['0'])
-y = data['0']
+
+def equations(x, y, w, b, n):
+    sigmoid = 1 / (1 + np.exp(-(np.dot(x, w) + b)))
+
+    error_value = (1 / n) * (
+        -(np.dot(y.T, np.log(sigmoid + 1e-8)) + np.dot((1 - y).T, np.log(1 - sigmoid + 1e-8))))
+
+    return error_value, sigmoid
+
+
+def trainModel(x_train, y_train, x_test, y_test, iterations, alpha):
+    x_train_samples, x_train_size = x_train.shape
+    weight = np.zeros(x_train_size)
+    print(weight.size)
+    bias = 0
+    error_value = 0
+    for i in range(iterations):
+        # Y_hat formula (predicted values)
+
+        error_value, sigmoid = equations(x_train, y_train, weight, bias, x_train_samples)
+        train_error_history.append(error_value)
+
+        predict_value = predict(x_train, weight, bias)
+        accuracy = Evaluate_logistic(predict_value, y_train)
+        train_accuracy_history.append(accuracy)
+
+        difference = sigmoid - y_train
+        dw_value = 1 / x_train_size * np.dot(x_train.T, difference)
+        db_value = 1 / x_train_size * np.sum(difference)
+
+        weight = weight - (dw_value * alpha)
+        bias = bias - (db_value * alpha)
+
+        validation_error_value, sigmoid = equations(x_test, y_test, weight, bias, x_test.shape[0])
+        validation_error_history.append(validation_error_value)
+
+        predict_value = predict(x_test, weight, bias)
+        accuracy = Evaluate_logistic(predict_value, y_test)
+        validation_accuracy_history.append(accuracy)
+
+    return weight, bias
+
+
+def predict(x_test, weight, bias):
+    sigmoid = 1 / (1 + np.exp(-(np.dot(x_test, weight) + bias)))
+    return np.where(sigmoid >= 0.5, 1, 0)
+
+
+def Evaluate_logistic(prediction_values, y_test):
+    accuracy = np.mean(prediction_values == y_test) * 100
+    print(f'accuracy :{accuracy}')
+    # matrix = confusion_matrix(y_test, prediction_values)
+    # print(f'matrix : {matrix}')
+    # score = f1_score(y_test, prediction_values, average='weighted')
+    # print(f'f1 score :{score}')
+    return accuracy
+
+
+def plottingError(error_Hist, iterations):
+    plt.plot(range(iterations), error_Hist)
+    plt.xlabel("Iterations")
+    plt.ylabel("Cost")
+    plt.title("Cost Reduction over Time")
+    plt.show()
+
+
+def plottingValidation(error_Hist, iterations):
+    plt.plot(range(iterations), error_Hist)
+    plt.xlabel("Iterations")
+    plt.ylabel("Cost")
+    plt.title("Plottiing ")
+    plt.show()
+
+
+def main():
+    # Load the dataset
+    file_path = "A_Z Handwritten Data.csv"
+    data = pandas.read_csv(file_path)
+    # Work on a random subset of 1000 rows
+    data = data.sample(n=1000, random_state=42)
+    # Identify the number of unique classes
+    n_classes = data.loc[:, '0'].unique().size
+    print("Number of unique classes:", n_classes)
+    X = data.drop(columns=['0'])
+    y = data['0']
+    X = X / 255
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
+    X_test_reshaped = X_test.to_numpy().reshape(-1, 28, 28)
+    X_train_reshaped = X_train.to_numpy().reshape(-1, 28 * 28)
+
+    logisticRegression(X_train, y_train, X_test, y_test)
+
+    #SVM
+    # linear_svm = LinearSVC(random_state=0)
+    # linear_svm.fit(X_train, y_train)
+    # y_pred = linear_svm.predict(X_test)
+    # print(y_pred[2], y_test.iloc[2])
+    # # Create image for the 2D array
+    # plt.imshow(X_test_reshaped[2], cmap='gray')
+    # X_train_reshaped = X_train.to_numpy().reshape(-1, 28, 28)
+
 
 # o Normalize each image.
 # x(i) = x(i) - x(min) / x(max) - x(min)
 # x(min) = 0, x(max) = 255
-X = X / 255
+
 
 # ● Experiments and results:
 #   o Split the data into training and testing datasets
@@ -50,28 +157,17 @@ X = X / 255
 #       scores for the testing dataset.
 
 # Split the data into training and testing datasets
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
 
 # o Reshape the flattened vectors to reconstruct and display the corresponding
 # images while testing the models. [From requirement 1]
 # each image is converted from [1D] 784 pixels into [2D] 28 x 28 pixels
 # dataset is reshaped from 2D to 3D
-X_test_reshaped = X_test.to_numpy().reshape(-1, 28, 28)
 
 # SVM
 # linear kernels
 
-from sklearn.svm import LinearSVC
 # training
-linear_svm = LinearSVC(random_state=0)
-linear_svm.fit(X_train, y_train)
 
-y_pred = linear_svm.predict(X_test)
-
-print(y_pred[2], y_test.iloc[2])
-
-# Create image for the 2D array
-plt.imshow(X_test_reshaped[2],cmap = 'gray')
 
 # To save the trained model
 # import joblib
@@ -106,32 +202,30 @@ plt.imshow(X_test_reshaped[2],cmap = 'gray')
 #  o Compare the results of the models and suggest the best model.
 
 
-
-
 # Simple example of a neural network structure
-model = Sequential([
-    Flatten(input_shape=(28, 28)),
-    Dense(128, activation='relu'),  # Hidden layer with 128 neurons
-    Dense(26, activation='softmax') # Output layer (26 classes for A-Z)
-])
+# model = Sequential([
+#     Flatten(input_shape=(28, 28)),
+#     Dense(128, activation='relu'),  # Hidden layer with 128 neurons
+#     Dense(26, activation='softmax') # Output layer (26 classes for A-Z)
+# ])
 
 # Preparing the model by specifying how it will learn and evaluate its performance
-model.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['accuracy'])
+# model.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['accuracy'])
 
 
 # Reshape X_train, X_test
-X_train_reshaped = X_train.to_numpy().reshape(-1, 28, 28)
 
 
 # Train the model
-history = model.fit(X_train_reshaped, y_train, validation_split=0.2, epochs=10, batch_size=32)
+# history = model.fit(X_train_reshaped, y_train, validation_split=0.2, epochs=10, batch_size=32)
 
 # Saving the model
-model.save("model.h5")
+# model.save("model.h5")
 
 
 # Reload and test the best model
-model = tf.keras.models.load_model("model.h5")
-test_loss, test_acc = model.evaluate(X_test_reshaped, y_test, verbose=2)
-print(f"Best Model Test Accuracy: {test_acc:.4f}")
-
+# model = tf.keras.models.load_model("model.h5")
+# test_loss, test_acc = model.evaluate(X_test_reshaped, y_test, verbose=2)
+# print(f"Best Model Test Accuracy: {test_acc:.4f}")
+if __name__ == "__main__":
+    main()
