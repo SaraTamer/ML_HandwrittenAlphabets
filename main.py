@@ -37,6 +37,11 @@ class_distribution = data.groupby('0').size()
 print("\nClass Distribution:")
 print(class_distribution)
 
+# plot the class distribution
+plt.bar(alphabet, class_distribution)
+plt.title('Class Distribution')
+plt.show()
+
 # Separate features columns and target column
 X = data.drop(columns=['0'])
 y = data['0']
