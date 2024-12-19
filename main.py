@@ -21,16 +21,20 @@ file_path = "A_Z Handwritten Data.csv"  # Update the file path
 data = pandas.read_csv(file_path)
 
 # # Work on a random subset of 1000 rows
-# data = data.sample(n=5000, random_state=42)
+data = data.sample(n=5000, random_state=42)
+
+# class names
+alphabet = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J',
+            'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T',
+            'U', 'V', 'W', 'X', 'Y', 'Z']
 
 # Identify the number of unique classes
 n_classes = data.loc[:, '0'].unique().size
-print("Number of unique classes:", n_classes)
+print("\nNumber of unique classes:", n_classes)
 
 # show their distribution
-# show their distribution
 class_distribution = data.groupby('0').size()
-print("\nClass Distribution")
+print("\nClass Distribution:")
 print(class_distribution)
 
 # Separate features columns and target column
@@ -49,6 +53,16 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_
 # each image is converted from [1D] 784 pixels into [2D] 28 x 28 pixels
 X_test_reshaped = X_test.to_numpy().reshape(-1, 28, 28)
 
+def display_images(images, actual_labels, pred_labels, title):
+    for i in range(9):
+        plt.subplot(3, 3, i + 1)
+        plt.imshow(images[i], cmap='gray')
+        plt.title(f'Actual label: [{alphabet[actual_labels.iloc[i]]}], Predicted label: [{alphabet[pred_labels[i]]}]', fontsize=6)
+        plt.axis('off')
+    plt.suptitle(title)
+    plt.tight_layout()
+    plt.show()
+  
 # First experiment:
 # =====================================================================
 
@@ -64,12 +78,10 @@ y_pred = linear_svm.predict(X_test)
 # Other cells contain misclassifications
 c_matrix = confusion_matrix(y_test, y_pred)
 
-# confusion matrix visualization using heatmap
+# Reconstruct some images with model predctions
+display_images(X_test_reshaped, y_test, y_pred, 'SVM Linear Kernal')
 
-# class names
-alphabet = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J',
-            'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T',
-            'U', 'V', 'W', 'X', 'Y', 'Z']
+# confusion matrix visualization using heatmap
 
 # configure heatmap
 plt.figure(figsize=(16, 12))
@@ -92,6 +104,9 @@ nonlinear_svm.fit(X_train, y_train)
 
 # Test model on the testing data
 y_pred = nonlinear_svm.predict(X_test)
+
+# Reconstruct some images with model predctions
+display_images(X_test_reshaped, y_test, y_pred, 'SVM Nonlinear Kernal')
 
 # confusion matrix for testing data
 c_matrix = confusion_matrix(y_test, y_pred)
@@ -139,11 +154,11 @@ print( f"\nAverage F1 Score [SVM Non-Linear Kernal]: {f1_score(y_test, y_pred, a
 #  o Compare the results of the models and suggest the best model.
 
 
-# Split the data into training and validation datasets
-X_train, X_validation, y_train, y_validation = train_test_split(X_train, y_train, test_size=0.2, random_state=0)
-# Reshape X_train, X_test
-X_train_reshaped = X_train.to_numpy().reshape(-1, 28, 28)
-X_validation_reshaped = X_validation.to_numpy().reshape(-1, 28, 28)
+# # Split the data into training and validation datasets
+# X_train, X_validation, y_train, y_validation = train_test_split(X_train, y_train, test_size=0.2, random_state=0)
+# # Reshape X_train, X_test
+# X_train_reshaped = X_train.to_numpy().reshape(-1, 28, 28)
+# X_validation_reshaped = X_validation.to_numpy().reshape(-1, 28, 28)
 
 
 # Simple example of a neural network structure
