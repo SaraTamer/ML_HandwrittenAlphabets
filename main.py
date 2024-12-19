@@ -21,7 +21,7 @@ file_path = "A_Z Handwritten Data.csv"  # Update the file path
 data = pandas.read_csv(file_path)
 
 # # Work on a random subset of 1000 rows
-data = data.sample(n=5000, random_state=42)
+# data = data.sample(n=5000, random_state=42)
 
 # class names
 alphabet = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J',
@@ -154,11 +154,11 @@ print( f"\nAverage F1 Score [SVM Non-Linear Kernal]: {f1_score(y_test, y_pred, a
 #  o Compare the results of the models and suggest the best model.
 
 
-# # Split the data into training and validation datasets
-# X_train, X_validation, y_train, y_validation = train_test_split(X_train, y_train, test_size=0.2, random_state=0)
-# # Reshape X_train, X_test
-# X_train_reshaped = X_train.to_numpy().reshape(-1, 28, 28)
-# X_validation_reshaped = X_validation.to_numpy().reshape(-1, 28, 28)
+# Split the data into training and validation datasets
+X_train, X_validation, y_train, y_validation = train_test_split(X_train, y_train, test_size=0.2, random_state=0)
+# Reshape X_train, X_test
+X_train_reshaped = X_train.to_numpy().reshape(-1, 28, 28)
+X_validation_reshaped = X_validation.to_numpy().reshape(-1, 28, 28)
 
 
 # Simple example of a neural network structure
