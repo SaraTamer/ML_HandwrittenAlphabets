@@ -5,10 +5,11 @@ import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import confusion_matrix, f1_score
 from sklearn.svm import LinearSVC, SVC
-
+from PIL import Image
 import tensorflow as tf
 from tensorflow.keras import Sequential
 from tensorflow.keras.layers import Dense, Flatten
+
 
 from sklearn.metrics import confusion_matrix, classification_report, f1_score
 
@@ -71,67 +72,67 @@ def display_images(images, actual_labels, pred_labels, title):
 # First experiment:
 # =====================================================================
 
-# Train SVM model with linear kernel
-linear_svm = LinearSVC(random_state=0)
-linear_svm.fit(X_train, y_train)
+# # Train SVM model with linear kernel
+# linear_svm = LinearSVC(random_state=0)
+# linear_svm.fit(X_train, y_train)
 
-# Test model on the testing subset
-y_pred = linear_svm.predict(X_test)
+# # Test model on the testing subset
+# y_pred = linear_svm.predict(X_test)
 
-# Confusion matrix size is 26 x 26 that corrspond to true labels and predicted labels
-# Diagnal contains the correct classification made by the model [TP,TN]
-# Other cells contain misclassifications
-c_matrix = confusion_matrix(y_test, y_pred)
+# # Confusion matrix size is 26 x 26 that corrspond to true labels and predicted labels
+# # Diagnal contains the correct classification made by the model [TP,TN]
+# # Other cells contain misclassifications
+# c_matrix = confusion_matrix(y_test, y_pred)
 
-# Reconstruct some images with model predctions
-display_images(X_test_reshaped, y_test, y_pred, 'SVM Linear Kernal')
+# # Reconstruct some images with model predctions
+# display_images(X_test_reshaped, y_test, y_pred, 'SVM Linear Kernal')
 
-# confusion matrix visualization using heatmap
+# # confusion matrix visualization using heatmap
 
-# configure heatmap
-plt.figure(figsize=(16, 12))
-sns.heatmap(c_matrix, annot=True, fmt="d", cmap="Blues",
-            xticklabels=alphabet, yticklabels=alphabet)
-plt.title('Confusion Matrix [SVM Linear Kernal]')
-plt.ylabel('Actual labels')
-plt.xlabel('Predicted labels')
+# # configure heatmap
+# plt.figure(figsize=(16, 12))
+# sns.heatmap(c_matrix, annot=True, fmt="d", cmap="Blues",
+#             xticklabels=alphabet, yticklabels=alphabet)
+# plt.title('Confusion Matrix [SVM Linear Kernal]')
+# plt.ylabel('Actual labels')
+# plt.xlabel('Predicted labels')
 
-# display heatmap
-plt.show()
+# # display heatmap
+# plt.show()
 
-# average f1 score
-# weighted f1 score is chosen because the imbalance classes
-print(f"\nAverage F1 Score [SVM Linear Kernal]: {f1_score(y_test, y_pred, average='weighted'):.2f}")
+# # average f1 score
+# # weighted f1 score is chosen because the imbalance classes
+# print(f"\nAverage F1 Score [SVM Linear Kernal]: {f1_score(y_test, y_pred, average='weighted'):.2f}")
 
-# Train SVM model with non-linear kernel
-nonlinear_svm = SVC(kernel='rbf')
-nonlinear_svm.fit(X_train, y_train)
+# # Train SVM model with non-linear kernel
+# nonlinear_svm = SVC(kernel='rbf')
+# nonlinear_svm.fit(X_train, y_train)
 
-# Test model on the testing data
-y_pred = nonlinear_svm.predict(X_test)
+# # Test model on the testing data
+# y_pred = nonlinear_svm.predict(X_test)
 
-# Reconstruct some images with model predctions
-display_images(X_test_reshaped, y_test, y_pred, 'SVM Nonlinear Kernal')
+# # Reconstruct some images with model predctions
+# display_images(X_test_reshaped, y_test, y_pred, 'SVM Nonlinear Kernal')
 
-# confusion matrix for testing data
-c_matrix = confusion_matrix(y_test, y_pred)
+# # confusion matrix for testing data
+# c_matrix = confusion_matrix(y_test, y_pred)
 
-# confusion matrix visualization using heatmap
+# # confusion matrix visualization using heatmap
 
-# configure heatmap
-plt.figure(figsize=(16, 12))
-sns.heatmap(c_matrix, annot=True, fmt="d", cmap="Blues",
-            xticklabels=alphabet, yticklabels=alphabet)
-plt.title('Confusion Matrix [SVM Non-Linear Kernal]')
-plt.ylabel('Actual labels')
-plt.xlabel('Predicted labels')
+# # configure heatmap
+# plt.figure(figsize=(16, 12))
+# sns.heatmap(c_matrix, annot=True, fmt="d", cmap="Blues",
+#             xticklabels=alphabet, yticklabels=alphabet)
+# plt.title('Confusion Matrix [SVM Non-Linear Kernal]')
+# plt.ylabel('Actual labels')
+# plt.xlabel('Predicted labels')
 
-# display heatmap
-plt.show()
+# # display heatmap
+# plt.show()
 
-# average f1 score
-# weighted f1 score is chosen because the imbalance classes
-print( f"\nAverage F1 Score [SVM Non-Linear Kernal]: {f1_score(y_test, y_pred, average='weighted'):.2f}")
+# # average f1 score
+# # weighted f1 score is chosen because the imbalance classes
+# print( f"\nAverage F1 Score [SVM Non-Linear Kernal]: {f1_score(y_test, y_pred, average='weighted'):.2f}")
 
 # Second experiment:
 # =====================================================================
@@ -377,20 +378,61 @@ def plot_curves(history, model_name):
 
     plt.show()
 
-# Main workflow
-X_train_reshaped, X_validation_reshaped, y_train, y_validation = split_and_reshape(X_train, y_train)
+# # Main workflow
+# X_train_reshaped, X_validation_reshaped, y_train, y_validation = split_and_reshape(X_train, y_train)
 
-model1 = build_model1()
-model2 = build_model2()
+# model1 = build_model1()
+# model2 = build_model2()
 
-history1 = train_model(model1, X_train_reshaped, y_train, X_validation_reshaped, y_validation)
-history2 = train_model(model2, X_train_reshaped, y_train, X_validation_reshaped, y_validation)
+# history1 = train_model(model1, X_train_reshaped, y_train, X_validation_reshaped, y_validation)
+# history2 = train_model(model2, X_train_reshaped, y_train, X_validation_reshaped, y_validation)
 
-X_test_reshaped = X_test.to_numpy().reshape(-1, 28, 28)
-evaluate_and_save_best_model(model1, model2, X_test_reshaped, y_test)
-evaluate_best_model(X_test_reshaped, y_test)
+# X_test_reshaped = X_test.to_numpy().reshape(-1, 28, 28)
+# evaluate_and_save_best_model(model1, model2, X_test_reshaped, y_test)
+# evaluate_best_model(X_test_reshaped, y_test)
 
-plot_curves(history1, "Model 1")
-plot_curves(history2, "Model 2")
+# plot_curves(history1, "Model 1")
+# plot_curves(history2, "Model 2")
 
 
+
+
+##################### Testing with our names characters #################
+
+def preprocess_image(image_path):
+    # Open image in grayscale mode
+    image = Image.open(image_path).convert('L')
+
+    # Resize image to 28 X 28
+    image = image.resize((28, 28))
+
+    # Scaling pixel values
+    image_array = np.array(image) / 255.0  
+    return image_array
+
+def predict_letter(image_array, model):
+    image_array = image_array.reshape(1, 28, 28)
+    predictions = model.predict(image_array)
+    # Get height predection letter
+    predicted_class = np.argmax(predictions, axis=1)[0]
+    print (np.argmax(predictions, axis=1))
+
+    # Convert class index to ASCII letter
+    return chr(predicted_class + 65)
+
+def alphabetical_test():
+    best_model = tf.keras.models.load_model("best_model.h5")
+
+    team_names = ["Ahmed", "Sara", "Esraa", "Shefaa", "Ganna"]
+
+    for name in team_names:
+        predictions = []
+        for letter in name:
+            image_path = f"{letter.upper()}.png"
+            image_array = preprocess_image(image_path)
+            predicted_letter = predict_letter(image_array, best_model)
+            predictions.append(predicted_letter)
+        print(f"Actual Name: {name.upper()}, Predicted Name: {''.join(predictions)}")
+
+
+alphabetical_test()
