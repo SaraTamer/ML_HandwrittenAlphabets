@@ -20,8 +20,8 @@ from sklearn.metrics import confusion_matrix, classification_report, f1_score
 file_path = "A_Z Handwritten Data.csv"  # Update the file path
 data = pandas.read_csv(file_path)
 
-# # Work on a random subset of 1000 rows
-# data = data.sample(n=5000, random_state=42)
+# # Work on a random subset of 10000 rows
+data = data.sample(n=10000, random_state=42)
 
 # Identify the number of unique classes
 n_classes = data.loc[:, '0'].unique().size
@@ -139,68 +139,205 @@ print( f"\nAverage F1 Score [SVM Non-Linear Kernal]: {f1_score(y_test, y_pred, a
 #  o Compare the results of the models and suggest the best model.
 
 
-# Split the data into training and validation datasets
-X_train, X_validation, y_train, y_validation = train_test_split(X_train, y_train, test_size=0.2, random_state=0)
-# Reshape X_train, X_test
-X_train_reshaped = X_train.to_numpy().reshape(-1, 28, 28)
-X_validation_reshaped = X_validation.to_numpy().reshape(-1, 28, 28)
+# # Split the data into training and validation datasets
+# X_train, X_validation, y_train, y_validation = train_test_split(X_train, y_train, test_size=0.2, random_state=0)
+# # Reshape X_train, X_test
+# X_train_reshaped = X_train.to_numpy().reshape(-1, 28, 28)
+# X_validation_reshaped = X_validation.to_numpy().reshape(-1, 28, 28)
 
 
-# Simple example of a neural network structure
-model1 = Sequential([
-    Flatten(input_shape=(28, 28)),
-    Dense(128, activation='relu'),  # Hidden layer with 128 neurons
-    Dense(26, activation='softmax') # Output layer (26 classes for A-Z)
-])
+# # Simple example of a neural network structure
+# model1 = Sequential([
+#     Flatten(input_shape=(28, 28)),
+#     Dense(128, activation='relu'),  # Hidden layer with 128 neurons
+#     Dense(26, activation='softmax') # Output layer (26 classes for A-Z)
+# ])
 
-# Preparing the model by specifying how it will learn and evaluate its performance
-model1.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['accuracy'])
+# # Preparing the model by specifying how it will learn and evaluate its performance
+# model1.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['accuracy'])
 
-# Train the model
-history1 = model1.fit(X_train_reshaped, y_train,validation_data = (X_validation_reshaped,y_validation), epochs=10, batch_size=32)
-
-
-# Simple example of a neural network structure
-model2 = Sequential([
-    Flatten(input_shape=(28, 28)),
-    Dense(256, activation='relu'), 
-    Dense(128, activation='tanh'),
-    Dense(64, activation='sigmoid'),
-    Dense(26, activation='softmax') # Output layer (26 classes for A-Z)
-])
-
-# Preparing the model by specifying how it will learn and evaluate its performance
-model2.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['accuracy'])
-
-# Train the model
-history2 = model2.fit(X_train_reshaped, y_train,validation_data = (X_validation_reshaped,y_validation), epochs=10, batch_size=32)
+# # Train the model
+# history1 = model1.fit(X_train_reshaped, y_train,validation_data = (X_validation_reshaped,y_validation), epochs=10, batch_size=32)
 
 
-# Evaluate both models on the test dataset
-test_loss1, test_acc1 = model1.evaluate(X_test_reshaped, y_test, verbose=2)
-test_loss2, test_acc2 = model2.evaluate(X_test_reshaped, y_test, verbose=2)
+# # Simple example of a neural network structure
+# model2 = Sequential([
+#     Flatten(input_shape=(28, 28)),
+#     Dense(256, activation='relu'), 
+#     Dense(128, activation='tanh'),
+#     Dense(64, activation='sigmoid'),
+#     Dense(26, activation='softmax') # Output layer (26 classes for A-Z)
+# ])
 
-# Compare the test accuracies and save the best model
-if test_acc1 > test_acc2:
-    print(f"Model 1 is better with accuracy: {test_acc1:.4f}")
-    model1.save("best_model.h5")
-else:
-    print(f"Model 2 is better with accuracy: {test_acc2:.4f}")
-    model2.save("best_model.h5")
+# # Preparing the model by specifying how it will learn and evaluate its performance
+# model2.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['accuracy'])
+
+# # Train the model
+# history2 = model2.fit(X_train_reshaped, y_train,validation_data = (X_validation_reshaped,y_validation), epochs=10, batch_size=32)
 
 
-# Reload the best model
+# # Evaluate both models on the test dataset
+# test_loss1, test_acc1 = model1.evaluate(X_test_reshaped, y_test, verbose=2)
+# test_loss2, test_acc2 = model2.evaluate(X_test_reshaped, y_test, verbose=2)
 
-# Reload and test the best model1
-model1 = tf.keras.models.load_model("best_model.h5")
-test_loss1, test_acc1 = model1.evaluate(X_test_reshaped, y_test, verbose=2)
-print(f"Best Model Test Accuracy: {test_acc1:.4f}")
+# # Compare the test accuracies and save the best model
+# if test_acc1 > test_acc2:
+#     print(f"Model 1 is better with accuracy: {test_acc1:.4f}")
+#     model1.save("best_model.h5")
+# else:
+#     print(f"Model 2 is better with accuracy: {test_acc2:.4f}")
+#     model2.save("best_model.h5")
 
 
 
+# # Reload the best model
+# best_model = tf.keras.models.load_model("best_model.h5")
+
+# # Evaluate the best model on the test dataset
+# test_loss, test_acc = best_model.evaluate(X_test_reshaped, y_test, verbose=2)
+# print(f"Best Model Test Accuracy: {test_acc:.4f}")
+
+# # Predict the labels for the test dataset
+# y_pred = best_model.predict(X_test_reshaped)
+# y_pred_classes = np.argmax(y_pred, axis=1)
+
+
+# # Generate the confusion matrix
+# conf_matrix = confusion_matrix(y_test, y_pred_classes)
+# print("Confusion Matrix:")
+# print(conf_matrix)
+
+# # Create labels for the plot (A-Z)
+# labels = [chr(i) for i in range(65, 91)]  # ASCII values for A-Z
+
+
+# # Plot confusion matrix
+# plt.figure(figsize=(20,20))
+# sns.heatmap(conf_matrix, annot=True, fmt='d', cmap='Blues', 
+#             xticklabels=labels, 
+#             yticklabels=labels)
+# plt.title('Confusion Matrix')
+# plt.xlabel('Predicted')
+# plt.ylabel('True')
+# plt.show()
+
+
+# # Generate classification report
+# report = classification_report(y_test, y_pred_classes, 
+#                              target_names=labels, 
+#                              output_dict=True)
+
+# # Print detailed classification report
+# print("\nClassification Report:")
+# print(classification_report(y_test, y_pred_classes, target_names=labels))
+
+# # Calculate and print average F1 score
+# avg_f1 = report['weighted avg']['f1-score']
+# print(f"\nAverage F1 Score: {avg_f1:.4f}")
+
+
+# def plot_curves(history, model_name):
+#     # Accuracy curves
+#     plt.figure(figsize=(12, 4))
+#     plt.subplot(1, 2, 1)
+#     plt.plot(history.history['accuracy'], label='Train Accuracy')
+#     plt.plot(history.history['val_accuracy'], label='Validation Accuracy')
+#     plt.title(f'{model_name} Accuracy')
+#     plt.xlabel('Epochs')
+#     plt.ylabel('Accuracy')
+#     plt.legend()
+
+#     # Loss curves
+#     plt.subplot(1, 2, 2)
+#     plt.plot(history.history['loss'], label='Train Loss')
+#     plt.plot(history.history['val_loss'], label='Validation Loss')
+#     plt.title(f'{model_name} Loss')
+#     plt.xlabel('Epochs')
+#     plt.ylabel('Loss')
+#     plt.legend()
+
+#     plt.show()
+
+# plot_curves(history1, "Model 1")
+# plot_curves(history2, "Model 2")
+
+
+
+# Function to split and reshape training data
+def split_and_reshape(X_train, y_train):
+    X_train, X_validation, y_train, y_validation = train_test_split(X_train, y_train, test_size=0.2, random_state=0)
+    X_train_reshaped = X_train.to_numpy().reshape(-1, 28, 28)
+    X_validation_reshaped = X_validation.to_numpy().reshape(-1, 28, 28)
+    return X_train_reshaped, X_validation_reshaped, y_train, y_validation
+
+def build_model1():
+    model = Sequential([
+        Flatten(input_shape=(28, 28)),
+        Dense(128, activation='relu'),
+        Dense(26, activation='softmax')
+    ])
+    model.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['accuracy'])
+    return model
+
+def build_model2():
+    model = Sequential([
+        Flatten(input_shape=(28, 28)),
+        Dense(256, activation='relu'),
+        Dense(128, activation='tanh'),
+        Dense(64, activation='sigmoid'),
+        Dense(26, activation='softmax')
+    ])
+    model.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['accuracy'])
+    return model
+
+def train_model(model, X_train, y_train, X_validation, y_validation, epochs=10, batch_size=32):
+    return model.fit(X_train, y_train, validation_data=(X_validation, y_validation), epochs=epochs, batch_size=batch_size)
+
+def evaluate_and_save_best_model(model1, model2, X_test, y_test):
+    test_loss1, test_acc1 = model1.evaluate(X_test, y_test, verbose=2)
+    test_loss2, test_acc2 = model2.evaluate(X_test, y_test, verbose=2)
+
+    if test_acc1 > test_acc2:
+        print(f"Model 1 is better with accuracy: {test_acc1:.4f}")
+        model1.save("best_model.h5")
+    else:
+        print(f"Model 2 is better with accuracy: {test_acc2:.4f}")
+        model2.save("best_model.h5")
+
+def evaluate_best_model(X_test, y_test):
+    best_model = tf.keras.models.load_model("best_model.h5")
+
+    # Get the predections for X_test data
+    y_pred = best_model.predict(X_test)
+    
+    # Get the class with the height propability for each row
+    y_pred_classes = np.argmax(y_pred, axis=1)
+
+    conf_matrix = confusion_matrix(y_test, y_pred_classes)
+
+    # ASCII values for A-Z
+    labels = [chr(i) for i in range(65, 91)]
+
+    # Plot confusion matrix
+    plt.figure(figsize=(20, 20))
+    sns.heatmap(conf_matrix, annot=True, fmt='d', cmap='Blues', xticklabels=labels, yticklabels=labels)
+    plt.title('Confusion Matrix')
+    plt.xlabel('Predicted')
+    plt.ylabel('True')
+    plt.show()
+
+    # Generate classification report
+    report = classification_report(y_test, y_pred_classes, target_names=labels, output_dict=True)
+
+    # Calculate and print average F1 score
+    avg_f1 = report['weighted avg']['f1-score']
+    print(f"\nAverage F1 Score: {avg_f1:.4f}")
+
+# Function to plot accuracy and loss curves
 def plot_curves(history, model_name):
-    # Accuracy curves
     plt.figure(figsize=(12, 4))
+
+    # Accuracy curves
     plt.subplot(1, 2, 1)
     plt.plot(history.history['accuracy'], label='Train Accuracy')
     plt.plot(history.history['val_accuracy'], label='Validation Accuracy')
@@ -220,6 +357,20 @@ def plot_curves(history, model_name):
 
     plt.show()
 
+# Main workflow
+X_train_reshaped, X_validation_reshaped, y_train, y_validation = split_and_reshape(X_train, y_train)
+
+model1 = build_model1()
+model2 = build_model2()
+
+history1 = train_model(model1, X_train_reshaped, y_train, X_validation_reshaped, y_validation)
+history2 = train_model(model2, X_train_reshaped, y_train, X_validation_reshaped, y_validation)
+
+X_test_reshaped = X_test.to_numpy().reshape(-1, 28, 28)
+evaluate_and_save_best_model(model1, model2, X_test_reshaped, y_test)
+evaluate_best_model(X_test_reshaped, y_test)
+
 plot_curves(history1, "Model 1")
 plot_curves(history2, "Model 2")
+
 
