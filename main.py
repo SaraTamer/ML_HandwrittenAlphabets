@@ -5,7 +5,6 @@ import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import confusion_matrix, f1_score, accuracy_score
 
-# Global variables to track training progress
 train_error_history = []
 train_accuracy_history = []
 validation_error_history = []
@@ -68,7 +67,6 @@ def trainModel(x_train, y_train, x_test, y_test, iterations, alpha):
     bias = 0
 
     for i in range(iterations):
-        # Compute error and predictions
         error_value, sigmoid = equations(x_train, y_train, weight, bias, n_samples)
         train_error_history.append(error_value)
 
@@ -76,16 +74,13 @@ def trainModel(x_train, y_train, x_test, y_test, iterations, alpha):
         train_accuracy = accuracy_score(y_train, train_predictions)
         train_accuracy_history.append(train_accuracy)
 
-        # Compute gradients
         difference = sigmoid - y_train
         dw_value = (1 / n_samples) * np.dot(x_train.T, difference)
         db_value = (1 / n_samples) * np.sum(difference)
 
-        # Update weights and bias
         weight -= alpha * dw_value
         bias -= alpha * db_value
 
-        # Validation metrics
         val_error, val_sigmoid = equations(x_test, y_test, weight, bias, x_test.shape[0])
         validation_error_history.append(val_error)
 
