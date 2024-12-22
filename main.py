@@ -92,6 +92,7 @@ def logisticRegression(x_train, y_train, x_test, y_test, x_val, y_val):
     predict_values = np.array(predict_values)
     predicted_classes = np.argmax(predict_values, axis=0)
 
+
     # Evaluate the model
     accuracy = accuracy_score(y_test, predicted_classes)
     print(f"Overall accuracy: {accuracy * 100:.2f}%")
@@ -321,7 +322,7 @@ def main():
     data = pandas.read_csv(file_path)
 
     # # Work on a random subset of 10000 rows
-    data = data.sample(n=10000, random_state=42)
+    data = data.sample(n=1000, random_state=42)
 
     # Data exploration and preparation:
     # =====================================================================
@@ -354,7 +355,7 @@ def main():
     # images while testing the models. [From requirement 1]
 
     # each image is converted from [1D] 784 pixels into [2D] 28 x 28 pixels
-    # X_test_reshaped = X_test.to_numpy().reshape(-1, 28, 28)
+    X_test_reshaped = X_test.to_numpy().reshape(-1, 28, 28)
     #
     # # First experiment:
     # # =====================================================================
@@ -430,7 +431,8 @@ def main():
 
     X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.2, random_state=42)
 
-    logisticRegression(X_train, y_train, X_test, y_test, X_val, y_val)
+    predicted_classes = logisticRegression(X_train, y_train, X_test, y_test, X_val, y_val)
+    display_images(X_test_reshaped, y_test, predicted_classes, "LogisticRegression")
 
     #------------------------------------------
     # alphabetical_test()
