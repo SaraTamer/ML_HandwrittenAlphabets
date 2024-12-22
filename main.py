@@ -344,7 +344,7 @@ def main():
     # =====================================================================
 
     # Train SVM model with linear kernel
-    linear_svm = LinearSVC(random_state=0)
+    linear_svm = SVC(kernel='linear',random_state=0)
     linear_svm.fit(X_train, y_train)
 
     # Test model on the testing subset
