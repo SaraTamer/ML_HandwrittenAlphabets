@@ -17,8 +17,6 @@ alphabet = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J',
             'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T',
             'U', 'V', 'W', 'X', 'Y', 'Z']
 
-# Data exploration and preparation:
-# =====================================================================
 
 def display_images(images, actual_labels, pred_labels, title):
     for i in range(9):
@@ -32,7 +30,7 @@ def display_images(images, actual_labels, pred_labels, title):
   
 
 def logisticRegression(x_train, y_train, x_test, y_test):
-    iterations = 100
+    iterations = 1000
     alpha = 0.1
     weights = []
     biases = []
@@ -51,7 +49,7 @@ def logisticRegression(x_train, y_train, x_test, y_test):
         y_test_binary = (y_test == i).astype(int)
 
         # Train the model and get histories
-        weight, bias, train_error, train_accuracy, val_error, val_accuracy = trainModel(
+        weight, bias, train_error, train_accuracy, val_error, val_accuracy = trainModel_logistic(
             x_train, y_train_binary, x_test, y_test_binary, iterations, alpha)
 
         weights.append(weight)
@@ -71,14 +69,14 @@ def logisticRegression(x_train, y_train, x_test, y_test):
     validation_accuracy_history_overall /= n_classes
 
     # Plot overall metrics
-    plot_metrics(
+    plot_logistic_metrics(
         train_error_history_overall,
         validation_error_history_overall,
         iterations,
         "Overall Error Curve",
         "Error"
     )
-    plot_metrics(
+    plot_logistic_metrics(
         train_accuracy_history_overall,
         validation_accuracy_history_overall,
         iterations,
@@ -104,10 +102,7 @@ def logisticRegression(x_train, y_train, x_test, y_test):
     return predicted_classes
 
 
-def trainModel(x_train, y_train, x_test, y_test, iterations, alpha):
-    """
-    Train logistic regression model using gradient descent.
-    """
+def trainModel_logistic(x_train, y_train, x_test, y_test, iterations, alpha):
     n_samples, n_features = x_train.shape
     weight = np.zeros(n_features)
     bias = 0
@@ -118,7 +113,7 @@ def trainModel(x_train, y_train, x_test, y_test, iterations, alpha):
     validation_accuracy_history = []
 
     for i in range(iterations):
-        error_value, sigmoid = equations(x_train, y_train, weight, bias, n_samples)
+        error_value, sigmoid = logistic_equations(x_train, y_train, weight, bias, n_samples)
         train_error_history.append(error_value)
 
         train_predictions = np.where(sigmoid >= 0.5, 1, 0)
@@ -132,7 +127,7 @@ def trainModel(x_train, y_train, x_test, y_test, iterations, alpha):
         weight -= alpha * dw_value
         bias -= alpha * db_value
 
-        val_error, val_sigmoid = equations(x_test, y_test, weight, bias, x_test.shape[0])
+        val_error, val_sigmoid = logistic_equations(x_test, y_test, weight, bias, x_test.shape[0])
         validation_error_history.append(val_error)
 
         val_predictions = np.where(val_sigmoid >= 0.5, 1, 0)
@@ -142,7 +137,7 @@ def trainModel(x_train, y_train, x_test, y_test, iterations, alpha):
     return weight, bias, train_error_history, train_accuracy_history, validation_error_history, validation_accuracy_history
 
 
-def plot_metrics(train_history, val_history, iterations, title, ylabel):
+def plot_logistic_metrics(train_history, val_history, iterations, title, ylabel):
     plt.figure(figsize=(8, 5))
     plt.plot(range(iterations), train_history, label="Training")
     plt.plot(range(iterations), val_history, label="Validation")
@@ -154,7 +149,7 @@ def plot_metrics(train_history, val_history, iterations, title, ylabel):
     plt.show()
 
 
-def equations(x, y, w, b, n):
+def logistic_equations(x, y, w, b, n):
     sigmoid = 1 / (1 + np.exp(-(np.dot(x, w) + b)))
     error_value = (1 / n) * (
         -(np.dot(y.T, np.log(sigmoid + 1e-8)) + np.dot((1 - y).T, np.log(1 - sigmoid + 1e-8))))
@@ -309,6 +304,8 @@ def main():
     # # Work on a random subset of 10000 rows
     data = data.sample(n=10000, random_state=42)
 
+    # Data exploration and preparation:
+    # =====================================================================
 
     # Identify the number of unique classes
     n_classes = data.loc[:, '0'].unique().size
