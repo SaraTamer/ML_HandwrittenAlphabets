@@ -1,4 +1,4 @@
-import pandas as pd
+import pandas
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
@@ -29,7 +29,7 @@ def display_images(images, actual_labels, pred_labels, title):
     plt.show()
   
 
-def logisticRegression(x_train, y_train, x_test, y_test):
+def logisticRegression(x_train, y_train, x_test, y_test, x_val, y_val):
     iterations = 1000
     alpha = 0.1
     weights = []
@@ -46,11 +46,11 @@ def logisticRegression(x_train, y_train, x_test, y_test):
 
     for i in unique_classes:
         y_train_binary = (y_train == i).astype(int)
-        y_test_binary = (y_test == i).astype(int)
+        y_val_binary = (y_val == i).astype(int)
 
         # Train the model and get histories
         weight, bias, train_error, train_accuracy, val_error, val_accuracy = trainModel(
-            x_train, y_train_binary, x_test, y_test_binary, iterations, alpha)
+            x_train, y_train_binary, x_val, y_val_binary, iterations, alpha)
 
         weights.append(weight)
         biases.append(bias)
@@ -69,14 +69,14 @@ def logisticRegression(x_train, y_train, x_test, y_test):
     validation_accuracy_history_overall /= n_classes
 
     # Plot overall metrics
-    plot_logistic_metrics(
+    plot_metrics(
         train_error_history_overall,
         validation_error_history_overall,
         iterations,
         "Overall Error Curve",
         "Error"
     )
-    plot_logistic_metrics(
+    plot_metrics(
         train_accuracy_history_overall,
         validation_accuracy_history_overall,
         iterations,
@@ -102,7 +102,7 @@ def logisticRegression(x_train, y_train, x_test, y_test):
     return predicted_classes
 
 
-def trainModel_logistic(x_train, y_train, x_test, y_test, iterations, alpha):
+def trainModel(x_train, y_train, x_val, y_val, iterations, alpha):
     n_samples, n_features = x_train.shape
     weight = np.zeros(n_features)
     bias = 0
@@ -113,7 +113,7 @@ def trainModel_logistic(x_train, y_train, x_test, y_test, iterations, alpha):
     validation_accuracy_history = []
 
     for i in range(iterations):
-        error_value, sigmoid = logistic_equations(x_train, y_train, weight, bias, n_samples)
+        error_value, sigmoid = equations(x_train, y_train, weight, bias, n_samples)
         train_error_history.append(error_value)
 
         train_predictions = np.where(sigmoid >= 0.5, 1, 0)
@@ -127,14 +127,33 @@ def trainModel_logistic(x_train, y_train, x_test, y_test, iterations, alpha):
         weight -= alpha * dw_value
         bias -= alpha * db_value
 
-        val_error, val_sigmoid = logistic_equations(x_test, y_test, weight, bias, x_test.shape[0])
+        val_error, val_sigmoid = equations(x_val, y_val, weight, bias, x_val.shape[0])
         validation_error_history.append(val_error)
 
         val_predictions = np.where(val_sigmoid >= 0.5, 1, 0)
-        val_accuracy = accuracy_score(y_test, val_predictions)
+        val_accuracy = accuracy_score(y_val, val_predictions)
         validation_accuracy_history.append(val_accuracy)
 
     return weight, bias, train_error_history, train_accuracy_history, validation_error_history, validation_accuracy_history
+
+
+def plot_metrics(train_history, val_history, iterations, title, ylabel):
+    plt.figure(figsize=(8, 5))
+    plt.plot(range(iterations), train_history, label="Training")
+    plt.plot(range(iterations), val_history, label="Validation")
+    plt.xlabel("Iterations")
+    plt.ylabel(ylabel)
+    plt.title(title)
+    plt.legend()
+    plt.grid(True)
+    plt.show()
+
+
+def equations(x, y, w, b, n):
+    sigmoid = 1 / (1 + np.exp(-(np.dot(x, w) + b)))
+    error_value = (1 / n) * (
+        -(np.dot(y.T, np.log(sigmoid + 1e-8)) + np.dot((1 - y).T, np.log(1 - sigmoid + 1e-8))))
+    return error_value, sigmoid
 
 
 def plot_logistic_metrics(train_history, val_history, iterations, title, ylabel):
@@ -159,7 +178,6 @@ def logistic_equations(x, y, w, b, n):
 def predict(x_test, weight, bias):
     sigmoid = 1 / (1 + np.exp(-(np.dot(x_test, weight) + bias)))
     return sigmoid
-
 
 
 # Function to split and reshape training data
