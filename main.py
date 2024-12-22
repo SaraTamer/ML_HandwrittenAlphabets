@@ -4,7 +4,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import confusion_matrix, classification_report, f1_score
-from sklearn.svm import LinearSVC, SVC
+from sklearn.svm import SVC
 from PIL import Image
 import tensorflow as tf
 from tensorflow.keras import Sequential
