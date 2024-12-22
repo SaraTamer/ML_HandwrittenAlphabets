@@ -5,11 +5,6 @@ import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import confusion_matrix, f1_score, accuracy_score
 
-train_error_history = []
-train_accuracy_history = []
-validation_error_history = []
-validation_accuracy_history = []
-
 
 def logisticRegression(x_train, y_train, x_test, y_test):
     """
@@ -23,12 +18,51 @@ def logisticRegression(x_train, y_train, x_test, y_test):
 
     unique_classes = np.unique(y_train)
 
+    # Initialize overall metrics
+    train_error_history_overall = np.zeros(iterations)
+    train_accuracy_history_overall = np.zeros(iterations)
+    validation_error_history_overall = np.zeros(iterations)
+    validation_accuracy_history_overall = np.zeros(iterations)
+
     for i in unique_classes:
         y_train_binary = (y_train == i).astype(int)
         y_test_binary = (y_test == i).astype(int)
-        weight, bias = trainModel(x_train, y_train_binary, x_test, y_test_binary, iterations, alpha)
+
+        # Train the model and get histories
+        weight, bias, train_error, train_accuracy, val_error, val_accuracy = trainModel(
+            x_train, y_train_binary, x_test, y_test_binary, iterations, alpha)
+
         weights.append(weight)
         biases.append(bias)
+
+        # Accumulate metrics
+        train_error_history_overall += np.array(train_error)
+        train_accuracy_history_overall += np.array(train_accuracy)
+        validation_error_history_overall += np.array(val_error)
+        validation_accuracy_history_overall += np.array(val_accuracy)
+
+    # Average the accumulated metrics
+    n_classes = len(unique_classes)
+    train_error_history_overall /= n_classes
+    train_accuracy_history_overall /= n_classes
+    validation_error_history_overall /= n_classes
+    validation_accuracy_history_overall /= n_classes
+
+    # Plot overall metrics
+    plot_metrics(
+        train_error_history_overall,
+        validation_error_history_overall,
+        iterations,
+        "Overall Error Curve",
+        "Error"
+    )
+    plot_metrics(
+        train_accuracy_history_overall,
+        validation_accuracy_history_overall,
+        iterations,
+        "Overall Accuracy Curve",
+        "Accuracy"
+    )
 
     # Predict values for each class
     for index, label in enumerate(unique_classes):
@@ -48,16 +82,6 @@ def logisticRegression(x_train, y_train, x_test, y_test):
     return predicted_classes
 
 
-def equations(x, y, w, b, n):
-    """
-    Compute sigmoid values and error for logistic regression.
-    """
-    sigmoid = 1 / (1 + np.exp(-(np.dot(x, w) + b)))
-    error_value = (1 / n) * (
-        -(np.dot(y.T, np.log(sigmoid + 1e-8)) + np.dot((1 - y).T, np.log(1 - sigmoid + 1e-8))))
-    return error_value, sigmoid
-
-
 def trainModel(x_train, y_train, x_test, y_test, iterations, alpha):
     """
     Train logistic regression model using gradient descent.
@@ -65,6 +89,11 @@ def trainModel(x_train, y_train, x_test, y_test, iterations, alpha):
     n_samples, n_features = x_train.shape
     weight = np.zeros(n_features)
     bias = 0
+
+    train_error_history = []
+    train_accuracy_history = []
+    validation_error_history = []
+    validation_accuracy_history = []
 
     for i in range(iterations):
         error_value, sigmoid = equations(x_train, y_train, weight, bias, n_samples)
@@ -88,40 +117,47 @@ def trainModel(x_train, y_train, x_test, y_test, iterations, alpha):
         val_accuracy = accuracy_score(y_test, val_predictions)
         validation_accuracy_history.append(val_accuracy)
 
-    return weight, bias
+    return weight, bias, train_error_history, train_accuracy_history, validation_error_history, validation_accuracy_history
+
+
+def plot_metrics(train_history, val_history, iterations, title, ylabel):
+    plt.figure(figsize=(8, 5))
+    plt.plot(range(iterations), train_history, label="Training")
+    plt.plot(range(iterations), val_history, label="Validation")
+    plt.xlabel("Iterations")
+    plt.ylabel(ylabel)
+    plt.title(title)
+    plt.legend()
+    plt.grid(True)
+    plt.show()
+
+
+def equations(x, y, w, b, n):
+    sigmoid = 1 / (1 + np.exp(-(np.dot(x, w) + b)))
+    error_value = (1 / n) * (
+        -(np.dot(y.T, np.log(sigmoid + 1e-8)) + np.dot((1 - y).T, np.log(1 - sigmoid + 1e-8))))
+    return error_value, sigmoid
 
 
 def predict(x_test, weight, bias):
-    """
-    Make predictions using the learned weights and bias.
-    """
     sigmoid = 1 / (1 + np.exp(-(np.dot(x_test, weight) + bias)))
     return sigmoid
 
 
 def main():
-    """
-    Main function to load data, preprocess, and train the model.
-    """
-    # Load the dataset
     file_path = "A_Z Handwritten Data.csv"
     data = pd.read_csv(file_path)
 
-    # Use a random subset of 1000 rows
-    data = data.sample(n=1000, random_state=42)
+    data = data.sample(n=10000, random_state=42)
 
-    # Identify the number of unique classes
     n_classes = data.iloc[:, 0].nunique()
     print("Number of unique classes:", n_classes)
 
-    # Split features and target
-    X = data.drop(columns=['0']) / 255.0  # Normalize pixel values
+    X = data.drop(columns=['0']) / 255.0
     y = data['0']
 
-    # Split into training and testing datasets
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-    # Train logistic regression model
     logisticRegression(X_train, y_train, X_test, y_test)
 
 
