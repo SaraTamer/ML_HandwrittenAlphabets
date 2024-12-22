@@ -1,4 +1,4 @@
-import pandas as pd
+import pandas
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
@@ -6,9 +6,9 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import confusion_matrix, classification_report, f1_score
 from sklearn.svm import SVC
 from PIL import Image
-import tensorflow as tf
-from tensorflow.keras import Sequential
-from tensorflow.keras.layers import Dense, Flatten
+# import tensorflow as tf
+# from tensorflow.keras import Sequential
+# from tensorflow.keras.layers import Dense, Flatten
 from sklearn.metrics import accuracy_score
 
 
@@ -29,7 +29,7 @@ def display_images(images, actual_labels, pred_labels, title):
     plt.show()
   
 
-def logisticRegression(x_train, y_train, x_test, y_test):
+def logisticRegression(x_train, y_train, x_test, y_test, x_val, y_val):
     iterations = 1000
     alpha = 0.1
     weights = []
@@ -46,11 +46,11 @@ def logisticRegression(x_train, y_train, x_test, y_test):
 
     for i in unique_classes:
         y_train_binary = (y_train == i).astype(int)
-        y_test_binary = (y_test == i).astype(int)
+        y_val_binary = (y_val == i).astype(int)
 
         # Train the model and get histories
         weight, bias, train_error, train_accuracy, val_error, val_accuracy = trainModel(
-            x_train, y_train_binary, x_test, y_test_binary, iterations, alpha)
+            x_train, y_train_binary, x_val, y_val_binary, iterations, alpha)
 
         weights.append(weight)
         biases.append(bias)
@@ -69,14 +69,14 @@ def logisticRegression(x_train, y_train, x_test, y_test):
     validation_accuracy_history_overall /= n_classes
 
     # Plot overall metrics
-    plot_logistic_metrics(
+    plot_metrics(
         train_error_history_overall,
         validation_error_history_overall,
         iterations,
         "Overall Error Curve",
         "Error"
     )
-    plot_logistic_metrics(
+    plot_metrics(
         train_accuracy_history_overall,
         validation_accuracy_history_overall,
         iterations,
@@ -102,7 +102,7 @@ def logisticRegression(x_train, y_train, x_test, y_test):
     return predicted_classes
 
 
-def trainModel_logistic(x_train, y_train, x_test, y_test, iterations, alpha):
+def trainModel(x_train, y_train, x_val, y_val, iterations, alpha):
     n_samples, n_features = x_train.shape
     weight = np.zeros(n_features)
     bias = 0
@@ -113,7 +113,7 @@ def trainModel_logistic(x_train, y_train, x_test, y_test, iterations, alpha):
     validation_accuracy_history = []
 
     for i in range(iterations):
-        error_value, sigmoid = logistic_equations(x_train, y_train, weight, bias, n_samples)
+        error_value, sigmoid = equations(x_train, y_train, weight, bias, n_samples)
         train_error_history.append(error_value)
 
         train_predictions = np.where(sigmoid >= 0.5, 1, 0)
@@ -127,14 +127,33 @@ def trainModel_logistic(x_train, y_train, x_test, y_test, iterations, alpha):
         weight -= alpha * dw_value
         bias -= alpha * db_value
 
-        val_error, val_sigmoid = logistic_equations(x_test, y_test, weight, bias, x_test.shape[0])
+        val_error, val_sigmoid = equations(x_val, y_val, weight, bias, x_val.shape[0])
         validation_error_history.append(val_error)
 
         val_predictions = np.where(val_sigmoid >= 0.5, 1, 0)
-        val_accuracy = accuracy_score(y_test, val_predictions)
+        val_accuracy = accuracy_score(y_val, val_predictions)
         validation_accuracy_history.append(val_accuracy)
 
     return weight, bias, train_error_history, train_accuracy_history, validation_error_history, validation_accuracy_history
+
+
+def plot_metrics(train_history, val_history, iterations, title, ylabel):
+    plt.figure(figsize=(8, 5))
+    plt.plot(range(iterations), train_history, label="Training")
+    plt.plot(range(iterations), val_history, label="Validation")
+    plt.xlabel("Iterations")
+    plt.ylabel(ylabel)
+    plt.title(title)
+    plt.legend()
+    plt.grid(True)
+    plt.show()
+
+
+def equations(x, y, w, b, n):
+    sigmoid = 1 / (1 + np.exp(-(np.dot(x, w) + b)))
+    error_value = (1 / n) * (
+        -(np.dot(y.T, np.log(sigmoid + 1e-8)) + np.dot((1 - y).T, np.log(1 - sigmoid + 1e-8))))
+    return error_value, sigmoid
 
 
 def plot_logistic_metrics(train_history, val_history, iterations, title, ylabel):
@@ -169,25 +188,25 @@ def split_and_reshape(X_train, y_train):
     X_validation_reshaped = X_validation.to_numpy().reshape(-1, 28, 28)
     return X_train_reshaped, X_validation_reshaped, y_train, y_validation
 
-def build_model1():
-    model = Sequential([
-        Flatten(input_shape=(28, 28)),
-        Dense(128, activation='relu'),
-        Dense(26, activation='softmax')
-    ])
-    model.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['accuracy'])
-    return model
+# def build_model1():
+#     model = Sequential([
+#         Flatten(input_shape=(28, 28)),
+#         Dense(128, activation='relu'),
+#         Dense(26, activation='softmax')
+#     ])
+#     model.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['accuracy'])
+#     return model
 
-def build_model2():
-    model = Sequential([
-        Flatten(input_shape=(28, 28)),
-        Dense(256, activation='relu'),
-        Dense(128, activation='tanh'),
-        Dense(64, activation='sigmoid'),
-        Dense(26, activation='softmax')
-    ])
-    model.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['accuracy'])
-    return model
+# def build_model2():
+#     model = Sequential([
+#         Flatten(input_shape=(28, 28)),
+#         Dense(256, activation='relu'),
+#         Dense(128, activation='tanh'),
+#         Dense(64, activation='sigmoid'),
+#         Dense(26, activation='softmax')
+#     ])
+#     model.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['accuracy'])
+#     return model
 
 def train_model(model, X_train, y_train, X_validation, y_validation, epochs=10, batch_size=32):
     return model.fit(X_train, y_train, validation_data=(X_validation, y_validation), epochs=epochs, batch_size=batch_size)
@@ -203,34 +222,34 @@ def evaluate_and_save_best_model(model1, model2, X_test, y_test):
         print(f"Model 2 is better with accuracy: {test_acc2:.4f}")
         model2.save("best_model.h5")
 
-def evaluate_best_model(X_test, y_test):
-    best_model = tf.keras.models.load_model("best_model.h5")
-
-    # Get the predections for X_test data
-    y_pred = best_model.predict(X_test)
-    
-    # Get the class with the height propability for each row
-    y_pred_classes = np.argmax(y_pred, axis=1)
-
-    conf_matrix = confusion_matrix(y_test, y_pred_classes)
-
-    # ASCII values for A-Z
-    labels = [chr(i) for i in range(65, 91)]
-
-    # Plot confusion matrix
-    plt.figure(figsize=(20, 20))
-    sns.heatmap(conf_matrix, annot=True, fmt='d', cmap='Blues', xticklabels=labels, yticklabels=labels)
-    plt.title('Confusion Matrix')
-    plt.xlabel('Predicted')
-    plt.ylabel('True')
-    plt.show()
-
-    # Generate classification report
-    report = classification_report(y_test, y_pred_classes, target_names=labels, output_dict=True)
-
-    # Calculate and print average F1 score
-    avg_f1 = report['weighted avg']['f1-score']
-    print(f"\nAverage F1 Score: {avg_f1:.4f}")
+# def evaluate_best_model(X_test, y_test):
+#     best_model = tf.keras.models.load_model("best_model.h5")
+#
+#     # Get the predections for X_test data
+#     y_pred = best_model.predict(X_test)
+#
+#     # Get the class with the height propability for each row
+#     y_pred_classes = np.argmax(y_pred, axis=1)
+#
+#     conf_matrix = confusion_matrix(y_test, y_pred_classes)
+#
+#     # ASCII values for A-Z
+#     labels = [chr(i) for i in range(65, 91)]
+#
+#     # Plot confusion matrix
+#     plt.figure(figsize=(20, 20))
+#     sns.heatmap(conf_matrix, annot=True, fmt='d', cmap='Blues', xticklabels=labels, yticklabels=labels)
+#     plt.title('Confusion Matrix')
+#     plt.xlabel('Predicted')
+#     plt.ylabel('True')
+#     plt.show()
+#
+#     # Generate classification report
+#     report = classification_report(y_test, y_pred_classes, target_names=labels, output_dict=True)
+#
+#     # Calculate and print average F1 score
+#     avg_f1 = report['weighted avg']['f1-score']
+#     print(f"\nAverage F1 Score: {avg_f1:.4f}")
 
 # Function to plot accuracy and loss curves
 def plot_curves(history, model_name):
@@ -280,21 +299,21 @@ def predict_letter(image_array, model):
     # Convert class index to ASCII letter
     return chr(predicted_class + 65)
 
-def alphabetical_test():
-    best_model = tf.keras.models.load_model("best_model.h5")
-
-    team_names = ["Ahmed", "Sara", "Esraa", "Shefaa", "Ganna"]
-
-    for name in team_names:
-        predictions = []
-        for letter in name:
-            image_path = f"{letter.upper()}.png"
-            image_array = preprocess_image(image_path)
-            predicted_letter = predict_letter(image_array, best_model)
-            predictions.append(predicted_letter)
-        print(f"Actual Name: {name.upper()}, Predicted Name: {''.join(predictions)}")
-
-
+# def alphabetical_test():
+#     best_model = tf.keras.models.load_model("best_model.h5")
+#
+#     team_names = ["Ahmed", "Sara", "Esraa", "Shefaa", "Ganna"]
+#
+#     for name in team_names:
+#         predictions = []
+#         for letter in name:
+#             image_path = f"{letter.upper()}.png"
+#             image_array = preprocess_image(image_path)
+#             predicted_letter = predict_letter(image_array, best_model)
+#             predictions.append(predicted_letter)
+#         print(f"Actual Name: {name.upper()}, Predicted Name: {''.join(predictions)}")
+#
+#
 
 def main():
     # Load the dataset
@@ -308,18 +327,18 @@ def main():
     # =====================================================================
 
     # Identify the number of unique classes
-    n_classes = data.loc[:, '0'].unique().size
-    print("\nNumber of unique classes:", n_classes)
-
-    # show their distribution
-    class_distribution = data.groupby('0').size()
-    print("\nClass Distribution:")
-    print(class_distribution)
-
-    # plot the class distribution
-    plt.bar(alphabet, class_distribution)
-    plt.title('Class Distribution')
-    plt.show()
+    # n_classes = data.loc[:, '0'].unique().size
+    # print("\nNumber of unique classes:", n_classes)
+    #
+    # # show their distribution
+    # class_distribution = data.groupby('0').size()
+    # print("\nClass Distribution:")
+    # print(class_distribution)
+    #
+    # # plot the class distribution
+    # plt.bar(alphabet, class_distribution)
+    # plt.title('Class Distribution')
+    # plt.show()
 
     # Separate features columns and target column
     X = data.drop(columns=['0'])
@@ -335,72 +354,72 @@ def main():
     # images while testing the models. [From requirement 1]
 
     # each image is converted from [1D] 784 pixels into [2D] 28 x 28 pixels
-    X_test_reshaped = X_test.to_numpy().reshape(-1, 28, 28)
-
-    # First experiment:
-    # =====================================================================
-
-    # Train SVM model with linear kernel
-    linear_svm = SVC(kernel='linear',random_state=0)
-    linear_svm.fit(X_train, y_train)
-
-    # Test model on the testing subset
-    y_pred = linear_svm.predict(X_test)
-
-    # Confusion matrix size is 26 x 26 that corrspond to true labels and predicted labels
-    # Diagnal contains the correct classification made by the model [TP,TN]
-    # Other cells contain misclassifications
-    c_matrix = confusion_matrix(y_test, y_pred)
-
-    # Reconstruct some images with model predctions
-    display_images(X_test_reshaped, y_test, y_pred, 'SVM Linear Kernal')
-
-    # confusion matrix visualization using heatmap
-
-    # configure heatmap
-    plt.figure(figsize=(16, 12))
-    sns.heatmap(c_matrix, annot=True, fmt="d", cmap="Blues",
-                xticklabels=alphabet, yticklabels=alphabet)
-    plt.title('Confusion Matrix [SVM Linear Kernal]')
-    plt.ylabel('Actual labels')
-    plt.xlabel('Predicted labels')
-
-    # display heatmap
-    plt.show()
-
-    # average f1 score
-    # weighted f1 score is chosen because the imbalance classes
-    print(f"\nAverage F1 Score [SVM Linear Kernal]: {f1_score(y_test, y_pred, average='weighted'):.2f}")
-
-    # Train SVM model with non-linear kernel
-    nonlinear_svm = SVC(kernel='rbf')
-    nonlinear_svm.fit(X_train, y_train)
-
-    # Test model on the testing data
-    y_pred = nonlinear_svm.predict(X_test)
-
-    # Reconstruct some images with model predctions
-    display_images(X_test_reshaped, y_test, y_pred, 'SVM Nonlinear Kernal')
-
-    # confusion matrix for testing data
-    c_matrix = confusion_matrix(y_test, y_pred)
-
-    # confusion matrix visualization using heatmap
-
-    # configure heatmap
-    plt.figure(figsize=(16, 12))
-    sns.heatmap(c_matrix, annot=True, fmt="d", cmap="Blues",
-                xticklabels=alphabet, yticklabels=alphabet)
-    plt.title('Confusion Matrix [SVM Non-Linear Kernal]')
-    plt.ylabel('Actual labels')
-    plt.xlabel('Predicted labels')
-
-    # display heatmap
-    plt.show()
-
-    # average f1 score
-    # weighted f1 score is chosen because the imbalance classes
-    print(f"\nAverage F1 Score [SVM Non-Linear Kernal]: {f1_score(y_test, y_pred, average='weighted'):.2f}")
+    # X_test_reshaped = X_test.to_numpy().reshape(-1, 28, 28)
+    #
+    # # First experiment:
+    # # =====================================================================
+    #
+    # # Train SVM model with linear kernel
+    # linear_svm = SVC(kernel='linear',random_state=0)
+    # linear_svm.fit(X_train, y_train)
+    #
+    # # Test model on the testing subset
+    # y_pred = linear_svm.predict(X_test)
+    #
+    # # Confusion matrix size is 26 x 26 that corrspond to true labels and predicted labels
+    # # Diagnal contains the correct classification made by the model [TP,TN]
+    # # Other cells contain misclassifications
+    # c_matrix = confusion_matrix(y_test, y_pred)
+    #
+    # # Reconstruct some images with model predctions
+    # display_images(X_test_reshaped, y_test, y_pred, 'SVM Linear Kernal')
+    #
+    # # confusion matrix visualization using heatmap
+    #
+    # # configure heatmap
+    # plt.figure(figsize=(16, 12))
+    # sns.heatmap(c_matrix, annot=True, fmt="d", cmap="Blues",
+    #             xticklabels=alphabet, yticklabels=alphabet)
+    # plt.title('Confusion Matrix [SVM Linear Kernal]')
+    # plt.ylabel('Actual labels')
+    # plt.xlabel('Predicted labels')
+    #
+    # # display heatmap
+    # plt.show()
+    #
+    # # average f1 score
+    # # weighted f1 score is chosen because the imbalance classes
+    # print(f"\nAverage F1 Score [SVM Linear Kernal]: {f1_score(y_test, y_pred, average='weighted'):.2f}")
+    #
+    # # Train SVM model with non-linear kernel
+    # nonlinear_svm = SVC(kernel='rbf')
+    # nonlinear_svm.fit(X_train, y_train)
+    #
+    # # Test model on the testing data
+    # y_pred = nonlinear_svm.predict(X_test)
+    #
+    # # Reconstruct some images with model predctions
+    # display_images(X_test_reshaped, y_test, y_pred, 'SVM Nonlinear Kernal')
+    #
+    # # confusion matrix for testing data
+    # c_matrix = confusion_matrix(y_test, y_pred)
+    #
+    # # confusion matrix visualization using heatmap
+    #
+    # # configure heatmap
+    # plt.figure(figsize=(16, 12))
+    # sns.heatmap(c_matrix, annot=True, fmt="d", cmap="Blues",
+    #             xticklabels=alphabet, yticklabels=alphabet)
+    # plt.title('Confusion Matrix [SVM Non-Linear Kernal]')
+    # plt.ylabel('Actual labels')
+    # plt.xlabel('Predicted labels')
+    #
+    # # display heatmap
+    # plt.show()
+    #
+    # # average f1 score
+    # # weighted f1 score is chosen because the imbalance classes
+    # print(f"\nAverage F1 Score [SVM Non-Linear Kernal]: {f1_score(y_test, y_pred, average='weighted'):.2f}")
 
     # ---------------------------------------------------------------
     #Logistic Regression from scratch
@@ -408,12 +427,13 @@ def main():
     n_classes = data.iloc[:, 0].nunique()
     print("Number of unique classes:", n_classes)
 
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-    logisticRegression(X_train, y_train, X_test, y_test)
+    X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.2, random_state=42)
+
+    logisticRegression(X_train, y_train, X_test, y_test, X_val, y_val)
 
     #------------------------------------------
-    alphabetical_test()
+    # alphabetical_test()
 
 if __name__ == "__main__":
     main()
