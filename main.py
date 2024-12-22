@@ -113,7 +113,7 @@ def trainModel(x_train, y_train, x_val, y_val, iterations, alpha):
     validation_accuracy_history = []
 
     for i in range(iterations):
-        error_value, sigmoid = equations(x_train, y_train, weight, bias, n_samples)
+        error_value, sigmoid = logistic_equations(x_train, y_train, weight, bias, n_samples)
         train_error_history.append(error_value)
 
         train_predictions = np.where(sigmoid >= 0.5, 1, 0)
@@ -127,7 +127,7 @@ def trainModel(x_train, y_train, x_val, y_val, iterations, alpha):
         weight -= alpha * dw_value
         bias -= alpha * db_value
 
-        val_error, val_sigmoid = equations(x_val, y_val, weight, bias, x_val.shape[0])
+        val_error, val_sigmoid = logistic_equations(x_val, y_val, weight, bias, x_val.shape[0])
         validation_error_history.append(val_error)
 
         val_predictions = np.where(val_sigmoid >= 0.5, 1, 0)
