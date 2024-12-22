@@ -69,14 +69,14 @@ def logisticRegression(x_train, y_train, x_test, y_test, x_val, y_val):
     validation_accuracy_history_overall /= n_classes
 
     # Plot overall metrics
-    plot_metrics(
+    plot_logistic_metrics(
         train_error_history_overall,
         validation_error_history_overall,
         iterations,
         "Overall Error Curve",
         "Error"
     )
-    plot_metrics(
+    plot_logistic_metrics(
         train_accuracy_history_overall,
         validation_accuracy_history_overall,
         iterations,
@@ -161,6 +161,7 @@ def predict(x_test, weight, bias):
     return sigmoid
 
 
+
 # Function to split and reshape training data
 def split_and_reshape(X_train, y_train):
     X_train, X_validation, y_train, y_validation = train_test_split(X_train, y_train, test_size=0.2, random_state=0)
@@ -211,6 +212,9 @@ def evaluate_best_model(X_test, y_test):
     # Get the class with the height propability for each row
     y_pred_classes = np.argmax(y_pred, axis=1)
 
+    display_images(X_test, y_test, y_pred_classes, "NeuralNetworks")
+
+
     conf_matrix = confusion_matrix(y_test, y_pred_classes)
 
     # ASCII values for A-Z
@@ -256,6 +260,7 @@ def plot_curves(history, model_name):
     plt.show()
 
 
+
 ##################### Testing with our names characters #################
 
 def preprocess_image(image_path):
@@ -295,13 +300,14 @@ def alphabetical_test():
 
 
 
+
 def main():
     # Load the dataset
     file_path = "A_Z Handwritten Data.csv"  # Update the file path
     data = pandas.read_csv(file_path)
 
     # # Work on a random subset of 10000 rows
-    data = data.sample(n=10000, random_state=42)
+    # data = data.sample(n=10000, random_state=42)
 
     # Data exploration and preparation:
     # =====================================================================
@@ -413,6 +419,29 @@ def main():
     display_images(X_test_reshaped, y_test, predicted_classes, "LogisticRegression")
 
     #------------------------------------------
+
+    # Experiment 3 
+
+    X_train_reshaped, X_validation_reshaped, y_train, y_validation = split_and_reshape(X_train, y_train)
+    X_test_reshaped = X_test.to_numpy().reshape(-1, 28, 28)
+
+    #### Comment from here to not build and save the model again
+    
+    model1 = build_model1()
+    model2 = build_model2()
+
+    history1 = train_model(model1, X_train_reshaped, y_train, X_validation_reshaped, y_validation)
+    history2 = train_model(model2, X_train_reshaped, y_train, X_validation_reshaped, y_validation)
+
+    evaluate_and_save_best_model(model1, model2, X_test_reshaped, y_test)
+
+    plot_curves(history1, "Model 1")
+    plot_curves(history2, "Model 2")
+
+    ### to here
+
+    evaluate_best_model(X_test_reshaped, y_test)
+
     alphabetical_test()
 
 if __name__ == "__main__":
