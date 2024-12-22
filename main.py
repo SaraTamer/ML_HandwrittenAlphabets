@@ -1,4 +1,4 @@
-import pandas
+import pandas as pd
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
@@ -49,7 +49,7 @@ def logisticRegression(x_train, y_train, x_test, y_test):
         y_test_binary = (y_test == i).astype(int)
 
         # Train the model and get histories
-        weight, bias, train_error, train_accuracy, val_error, val_accuracy = trainModel_logistic(
+        weight, bias, train_error, train_accuracy, val_error, val_accuracy = trainModel(
             x_train, y_train_binary, x_test, y_test_binary, iterations, alpha)
 
         weights.append(weight)
