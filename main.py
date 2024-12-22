@@ -137,25 +137,6 @@ def trainModel(x_train, y_train, x_val, y_val, iterations, alpha):
     return weight, bias, train_error_history, train_accuracy_history, validation_error_history, validation_accuracy_history
 
 
-def plot_metrics(train_history, val_history, iterations, title, ylabel):
-    plt.figure(figsize=(8, 5))
-    plt.plot(range(iterations), train_history, label="Training")
-    plt.plot(range(iterations), val_history, label="Validation")
-    plt.xlabel("Iterations")
-    plt.ylabel(ylabel)
-    plt.title(title)
-    plt.legend()
-    plt.grid(True)
-    plt.show()
-
-
-def equations(x, y, w, b, n):
-    sigmoid = 1 / (1 + np.exp(-(np.dot(x, w) + b)))
-    error_value = (1 / n) * (
-        -(np.dot(y.T, np.log(sigmoid + 1e-8)) + np.dot((1 - y).T, np.log(1 - sigmoid + 1e-8))))
-    return error_value, sigmoid
-
-
 def plot_logistic_metrics(train_history, val_history, iterations, title, ylabel):
     plt.figure(figsize=(8, 5))
     plt.plot(range(iterations), train_history, label="Training")
@@ -428,7 +409,9 @@ def main():
 
     X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.2, random_state=42)
 
-    logisticRegression(X_train, y_train, X_test, y_test, X_val, y_val)
+    predicted_classes = logisticRegression(X_train, y_train, X_test, y_test, X_val, y_val)
+    display_images(X_test_reshaped, y_test, predicted_classes, "LogisticRegression")
+
     #------------------------------------------
     alphabetical_test()
 
